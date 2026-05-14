@@ -1,0 +1,14 @@
+---
+layout: null
+permalink: /robots.txt
+---
+User-agent: *
+Allow: /
+
+Sitemap: {{ site.url }}/sitemap.xml
+
+# Block unnecessary paths
+Disallow: /scripts/
+Disallow: /Gemfile
+Disallow: /Gemfile.lock
+Disallow: /.github/

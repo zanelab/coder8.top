@@ -26,7 +26,7 @@ description: >- # this means to ignore newlines until "baseurl:"
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "https://www.coder8.top" # the base hostname & protocol for your site, e.g. http://example.com
 favicon: "/favicon.png" # the favicon for your site
-logo: "/assets/images/default-image.jpeg" # logo image for SEO and social sharing
+logo: "/assets/images/seo-logo.jpg" # logo image for SEO and social sharing (1200x630)
 
 # Yat date format
 # refer to https://shopify.github.io/liquid/filters/date/ if you want to customize this
@@ -39,9 +39,16 @@ yat:
 # If you want transparent header, you can set true
 # header_transparent: false
 
+# Google Search Console verification (replace with your verification code)
+# Get your code from: https://search.google.com/search-console
+# google_site_verification: "your-verification-code-here"
+
 # Google analytics - GA4
 google_analytics: "G-N54MN13CMZ"
 enableDNT: "false"
+
+# Bing Webmaster verification (optional)
+# bing_site_verification: "your-bing-verification-code"
 
 # If you want to generate website sitemap, you can set true
 sitemap: true
