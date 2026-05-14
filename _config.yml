@@ -24,7 +24,7 @@ description: >- # this means to ignore newlines until "baseurl:"
   use, and build with AI. Your first stop for AI coding literacy.
 
 baseurl: "" # the subpath of your site, e.g. /blog
-url: "https://code8.top" # the base hostname & protocol for your site, e.g. http://example.com
+url: "https://www.coder8.top" # the base hostname & protocol for your site, e.g. http://example.com
 favicon: "/favicon.png" # the favicon for your site
 
 # Yat date format
