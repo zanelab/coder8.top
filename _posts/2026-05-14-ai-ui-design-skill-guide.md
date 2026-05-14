@@ -1,12 +1,19 @@
 ---
+layout: post
 title: "Transform AI-Generated UI from Ugly to Professional: The UI-UX-Pro-Max-Skill Guide"
-date: 2026-05-14 09:05:00
-categories: [AI Coding]
-tags: [AI, UI Design, UX, Frontend, Development]
-cover: /assets/images/posts/20260514090402-526e62db.jpg
+subtitle: "Bridging the gap between functional AI code and polished, professional user interfaces"
+banner:
+  image: /assets/images/posts/20260514090402-526e62db.jpg
+  opacity: 0.9
+author: zane.deng
+categories: [AI Assistants]
+tags:
+- AI
+- UI Design
+- UX
+- Frontend
+- Copilot
 ---
-
-![Cover Image](/assets/images/posts/20260514090402-526e62db.jpg)
 
 If you've ever asked an AI coding assistant to build a user interface, you've likely noticed a frustrating pattern: the code logic is impeccable, but the visual result screams "programmer aesthetic." Harsh color combinations, rigid layouts, arbitrary font selections—these are the hallmarks of AI-generated UI that technically works but visually fails.
 
