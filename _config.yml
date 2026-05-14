@@ -39,9 +39,8 @@ yat:
 # If you want transparent header, you can set true
 # header_transparent: false
 
-# Google Search Console verification (replace with your verification code)
-# Get your code from: https://search.google.com/search-console
-# google_site_verification: "your-verification-code-here"
+# Google Search Console verification
+google_site_verification: "OpaonlWSLr0FCD-6_Bjn_5nFDr_zhzlmU5xtXLWcqQ"
 
 # Google analytics - GA4
 google_analytics: "G-JT4CJ41J1C"
