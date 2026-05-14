@@ -16,6 +16,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 import urllib.request
 import urllib.error
+import urllib.parse
 import ssl
 import re
 
@@ -35,25 +36,23 @@ IMAGES_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def fetch_image_from_unsplash(query):
-    """Fetch a free image from Unsplash based on query"""
-    # Unsplash source API (no auth needed for source images)
-    # Format: https://source.unsplash.com/featured/?{query}
-    
-    keywords = ["ai", "coding", "programming", "technology", "developer", "computer"]
-    search_query = query.lower() if query else "ai coding"
-    
-    # Use Unsplash source for random relevant image
-    image_url = f"https://source.unsplash.com/800x400/?{search_query},{','.join(keywords[:3])}"
+    """Fetch a free image from multiple sources"""
+    # Use picsum.photos as primary source (more reliable)
+    # Lorem Picsum provides random images without needing search params
     
     try:
+        # Generate unique seed for consistent but unique images
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        seed = hashlib.md5(query.encode()).hexdigest()[:8]
+        
+        # Use picsum.photos with seed for tech-related random image
+        image_url = f"https://picsum.photos/seed/{seed}/800/400"
+        
         req = urllib.request.Request(image_url, headers={
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
         })
         with urllib.request.urlopen(req, timeout=15, context=ssl_context) as response:
-            # Generate unique filename
-            timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-            hash_part = hashlib.md5(search_query.encode()).hexdigest()[:6]
-            filename = f"{timestamp}-{hash_part}.jpg"
+            filename = f"{timestamp}-{seed}.jpg"
             filepath = IMAGES_DIR / filename
             
             # Save image
@@ -64,6 +63,7 @@ def fetch_image_from_unsplash(query):
             return f"/assets/images/posts/{filename}"
     except Exception as e:
         print(f"Error downloading image: {e}", file=sys.stderr)
+        # Fallback: use a placeholder URL
         return None
 
 
@@ -124,19 +124,21 @@ def fetch_juejin_articles():
                     
                     # Check if related to AI coding
                     title_lower = title.lower()
-                    if any(kw in title_lower for kw in ["copilot", "cursor", "ai", "gpt", "llm", "claude", "ai编程", "ai开发", "代码生成"]):
+                    keywords = ["copilot", "cursor", "ai", "gpt", "llm", "claude", "ai编程", "ai开发", "代码生成", "智能", "机器学习", "深度学习", "神经网络", "agent", "提示词", "prompt", "写代码", "编程助手", "代码补全", "chatgpt", "deepseek"]
+                    if any(kw in title_lower for kw in keywords):
                         # Fetch full article content
                         detail = fetch_juejin_article_detail(article_id)
-                        if detail:
-                            articles.append({
-                                "title": detail.get("title", title),
-                                "url": f"https://juejin.cn/post/{article_id}",
-                                "content": detail.get("content", ""),
-                                "source": "juejin",
-                                "author": detail.get("author", ""),
-                                "view_count": article_info.get("view_count", 0),
-                                "like_count": article_info.get("digg_count", 0)
-                            })
+                        content = detail.get("content", "") if detail else article_info.get("brief_content", "")
+                        author = detail.get("author", "") if detail else article_info.get("author_user_info", {}).get("user_name", "")
+                        articles.append({
+                            "title": detail.get("title", title) if detail else title,
+                            "url": f"https://juejin.cn/post/{article_id}",
+                            "content": content,
+                            "source": "juejin",
+                            "author": author,
+                            "view_count": article_info.get("view_count", 0),
+                            "like_count": article_info.get("digg_count", 0)
+                        })
     except Exception as e:
         print(f"Error fetching from Juejin: {e}", file=sys.stderr)
     
@@ -251,10 +253,8 @@ def main():
     # Fetch cover images for each article
     print("\nFetching cover images...")
     for article in top_articles:
-        # Extract key topic from title for image search
-        title_words = article['title'].replace("AI", "").replace("写", "").replace("代码", "").replace("编程", "")
-        keywords = title_words[:30] if len(title_words) > 30 else title_words
-        image_path = fetch_image_from_unsplash(keywords)
+        # Use simple English keywords for image search (avoid Chinese chars in URL)
+        image_path = fetch_image_from_unsplash("ai coding technology")
         article['cover_image'] = image_path
     
     print(f"\nTop {len(top_articles)} articles selected:")
