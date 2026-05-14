@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """
 AI Coding Daily Article Collector
-- Fetches hot articles from Juejin and Zhihu about AI coding
-- Translates to English
+- Fetches hot articles from Juejin, Hacker News, GitHub Trending about AI coding
 - Generates Jekyll posts
 - Commits and pushes to GitHub
 """
@@ -22,8 +21,16 @@ import re
 
 # Configuration
 POSTS_DIR = Path(__file__).parent.parent / "_posts"
-MAX_ARTICLES = 2  # Max articles per day
-KEYWORDS = ["ai coding", "copilot", "cursor", "ai programming", "llm coding", "code generation", "ai assistant", "claude code", "ai 开发", "ai 编程", "ai 代码", "copilot", "cursor"]
+MAX_ARTICLES = 3  # Max articles per day
+MAX_PER_SOURCE = 5  # Max articles per source
+
+# Keywords for AI coding topics
+AI_KEYWORDS = [
+    "copilot", "cursor", "claude", "gpt", "llm", "ai", "chatgpt",
+    "deepseek", "agent", "prompt", "code generation", "ai coding",
+    "ai programming", "machine learning", "neural network",
+    "ai编程", "ai开发", "代码生成", "智能", "写代码", "编程助手"
+]
 
 # SSL context for HTTPS requests
 ssl_context = ssl.create_default_context()
@@ -35,17 +42,11 @@ IMAGES_DIR = Path(__file__).parent.parent / "assets" / "images" / "posts"
 IMAGES_DIR.mkdir(parents=True, exist_ok=True)
 
 
-def fetch_image_from_unsplash(query):
-    """Fetch a free image from multiple sources"""
-    # Use picsum.photos as primary source (more reliable)
-    # Lorem Picsum provides random images without needing search params
-    
+def fetch_image(query="ai coding technology"):
+    """Fetch a free image from picsum.photos"""
     try:
-        # Generate unique seed for consistent but unique images
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
         seed = hashlib.md5(query.encode()).hexdigest()[:8]
-        
-        # Use picsum.photos with seed for tech-related random image
         image_url = f"https://picsum.photos/seed/{seed}/800/400"
         
         req = urllib.request.Request(image_url, headers={
@@ -55,7 +56,6 @@ def fetch_image_from_unsplash(query):
             filename = f"{timestamp}-{seed}.jpg"
             filepath = IMAGES_DIR / filename
             
-            # Save image
             with open(filepath, 'wb') as f:
                 f.write(response.read())
             
@@ -63,9 +63,101 @@ def fetch_image_from_unsplash(query):
             return f"/assets/images/posts/{filename}"
     except Exception as e:
         print(f"Error downloading image: {e}", file=sys.stderr)
-        # Fallback: use a placeholder URL
         return None
 
+
+def matches_ai_keywords(text):
+    """Check if text matches AI coding keywords"""
+    text_lower = text.lower()
+    return any(kw in text_lower for kw in AI_KEYWORDS)
+
+
+# ========== Hacker News ==========
+
+def fetch_hacker_news_articles():
+    """Fetch top stories from Hacker News related to AI coding"""
+    articles = []
+    
+    try:
+        # Use HN Algolia API (much faster than Firebase API)
+        # Search for AI-related stories directly
+        url = "https://hn.algolia.com/api/v1/search?query=ai+OR+llm+OR+gpt+OR+claude+OR+copilot&tags=story&hitsPerPage=10"
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        
+        with urllib.request.urlopen(req, timeout=20, context=ssl_context) as resp:
+            data = json.loads(resp.read().decode())
+        
+        hits = data.get("hits", [])
+        print(f"  Got {len(hits)} AI-related stories from Algolia")
+        
+        for hit in hits[:5]:
+            title = hit.get("title", "")
+            url_link = hit.get("url") or f"https://news.ycombinator.com/item?id={hit.get('objectID')}"
+            
+            articles.append({
+                "title": title,
+                "url": url_link,
+                "content": f"Hacker News story with {hit.get('points', 0)} points, {hit.get('num_comments', 0)} comments",
+                "source": "hacker_news",
+                "author": hit.get("author", ""),
+                "view_count": hit.get("points", 0),
+                "like_count": hit.get("points", 0)
+            })
+            print(f"    Found: {title[:50]}...")
+        
+        print(f"  Found {len(articles)} AI-related articles")
+        
+    except Exception as e:
+        print(f"Error fetching from Hacker News: {e}", file=sys.stderr)
+    
+    return articles
+
+
+# ========== GitHub Trending ==========
+
+def fetch_github_trending():
+    """Fetch trending AI coding repositories from GitHub"""
+    articles = []
+    
+    try:
+        # Simplified search query for AI repos
+        query = urllib.parse.quote("ai OR llm OR gpt OR claude OR copilot OR cursor")
+        url = f"https://api.github.com/search/repositories?q={query}&sort=stars&order=desc&per_page=15"
+        
+        req = urllib.request.Request(url, headers={
+            "User-Agent": "Mozilla/5.0",
+            "Accept": "application/vnd.github.v3+json"
+        })
+        
+        with urllib.request.urlopen(req, timeout=30, context=ssl_context) as resp:
+            data = json.loads(resp.read().decode())
+        
+        print(f"  Got {data.get('total_count', 0)} total repos")
+        
+        for repo in data.get("items", [])[:MAX_PER_SOURCE]:
+            name = repo.get("full_name", "")
+            desc = repo.get("description", "") or ""
+            
+            articles.append({
+                "title": f"{name}: {desc[:80]}",
+                "url": repo.get("html_url", ""),
+                "content": f"GitHub repository with {repo.get('stargazers_count', 0)} stars. {desc}",
+                "source": "github",
+                "author": repo.get("owner", {}).get("login", ""),
+                "view_count": repo.get("stargazers_count", 0),
+                "like_count": repo.get("stargazers_count", 0)
+            })
+            print(f"    Found: {name} ({repo.get('stargazers_count', 0)} stars)")
+        
+        print(f"  Found {len(articles)} AI repos")
+        
+    except Exception as e:
+        print(f"Error fetching from GitHub: {e}", file=sys.stderr)
+    
+    return articles
+
+
+# ========== Juejin ==========
 
 def fetch_juejin_article_detail(article_id):
     """Fetch full article content from Juejin"""
@@ -95,9 +187,7 @@ def fetch_juejin_articles():
     """Fetch hot articles from Juejin API"""
     articles = []
     
-    # Juejin recommend API
     url = "https://api.juejin.cn/recommend_api/v1/article/recommend_cate_feed"
-    
     headers = {
         "Content-Type": "application/json",
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
@@ -106,8 +196,8 @@ def fetch_juejin_articles():
     try:
         data = json.dumps({
             "id_type": 2,
-            "sort_type": 200,  # Hot sort
-            "cate_id": "6809637767543259144",  # AI category
+            "sort_type": 200,
+            "cate_id": "6809637767543259144",
             "cursor": "0",
             "limit": 20
         }).encode('utf-8')
@@ -122,14 +212,11 @@ def fetch_juejin_articles():
                     title = article_info.get("title", "")
                     article_id = article_info.get("article_id", "")
                     
-                    # Check if related to AI coding
-                    title_lower = title.lower()
-                    keywords = ["copilot", "cursor", "ai", "gpt", "llm", "claude", "ai编程", "ai开发", "代码生成", "智能", "机器学习", "深度学习", "神经网络", "agent", "提示词", "prompt", "写代码", "编程助手", "代码补全", "chatgpt", "deepseek"]
-                    if any(kw in title_lower for kw in keywords):
-                        # Fetch full article content
+                    if matches_ai_keywords(title):
                         detail = fetch_juejin_article_detail(article_id)
                         content = detail.get("content", "") if detail else article_info.get("brief_content", "")
                         author = detail.get("author", "") if detail else article_info.get("author_user_info", {}).get("user_name", "")
+                        
                         articles.append({
                             "title": detail.get("title", title) if detail else title,
                             "url": f"https://juejin.cn/post/{article_id}",
@@ -139,132 +226,69 @@ def fetch_juejin_articles():
                             "view_count": article_info.get("view_count", 0),
                             "like_count": article_info.get("digg_count", 0)
                         })
+                        print(f"    Found: {title[:50]}...")
+                        
+                        if len(articles) >= MAX_PER_SOURCE:
+                            break
+        
+        print(f"  Found {len(articles)} AI-related articles")
+        
     except Exception as e:
         print(f"Error fetching from Juejin: {e}", file=sys.stderr)
     
     return articles
 
 
-def fetch_zhihu_articles():
-    """Fetch hot questions/articles from Zhihu"""
-    articles = []
-    
-    # Zhihu hot questions API
-    url = "https://www.zhihu.com/api/v3/feed/topstory/hot-lists/total?limit=50"
-    
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-    }
-    
-    try:
-        req = urllib.request.Request(url, headers=headers)
-        with urllib.request.urlopen(req, timeout=15, context=ssl_context) as response:
-            result = json.loads(response.read().decode('utf-8'))
-            
-            for item in result.get("data", []):
-                target = item.get("target", {})
-                title = target.get("title", "")
-                excerpt = target.get("excerpt", "")
-                
-                # Check if related to AI coding
-                title_lower = title.lower()
-                excerpt_lower = excerpt.lower()
-                combined = title_lower + " " + excerpt_lower
-                
-                if any(kw in combined for kw in ["copilot", "cursor", "ai编程", "ai开发", "ai代码", "ai 写代码", "gpt", "llm", "claude"]):
-                    articles.append({
-                        "title": title,
-                        "url": target.get("url", ""),
-                        "content": excerpt,
-                        "source": "zhihu",
-                        "author": target.get("author", {}).get("name", ""),
-                        "hot_score": item.get("detail_text", "")
-                    })
-    except Exception as e:
-        print(f"Error fetching from Zhihu: {e}", file=sys.stderr)
-    
-    return articles
-
-
-def translate_to_english(title, content):
-    """Translate Chinese to English using LLM API"""
-    # This will be handled by the calling script via Hermes
-    # For now, return a placeholder that indicates translation needed
-    return title, content
-
-
-def generate_jekyll_post(article, translated_title, translated_content):
-    """Generate a Jekyll post markdown file"""
-    today = datetime.now()
-    date_str = today.strftime("%Y-%m-%d")
-    datetime_str = today.strftime("%Y-%m-%d %H:%M:%S")
-    
-    # Create filename from title
-    slug = re.sub(r'[^\w\s-]', '', translated_title.lower())
-    slug = re.sub(r'[\s]+', '-', slug)[:80]
-    filename = f"{date_str}-{slug}.md"
-    
-    # Generate unique hash to avoid duplicates
-    content_hash = hashlib.md5(article['title'].encode()).hexdigest()[:8]
-    if len(slug) < 10:
-        slug = f"{slug}-{content_hash}"
-        filename = f"{date_str}-{slug}.md"
-    
-    frontmatter = f"""---
-title: "{translated_title}"
-date: {datetime_str}
-categories: [AI Coding]
-tags: [AI, Coding, Productivity]
----
-
-"""
-    
-    return filename, frontmatter + translated_content
-
+# ========== Main ==========
 
 def main():
     print("Starting AI Coding Daily Article Collection...")
     print(f"Posts directory: {POSTS_DIR}")
     
-    # Ensure posts directory exists
     POSTS_DIR.mkdir(parents=True, exist_ok=True)
     
-    # Fetch articles
     all_articles = []
     
-    print("Fetching from Juejin...")
-    juejin_articles = fetch_juejin_articles()
-    print(f"  Found {len(juejin_articles)} articles")
-    all_articles.extend(juejin_articles)
+    # Fetch from Hacker News
+    print("\nFetching from Hacker News...")
+    hn_articles = fetch_hacker_news_articles()
+    all_articles.extend(hn_articles)
     
-    print("Fetching from Zhihu...")
-    zhihu_articles = fetch_zhihu_articles()
-    print(f"  Found {len(zhihu_articles)} articles")
-    all_articles.extend(zhihu_articles)
+    # Fetch from GitHub Trending
+    print("\nFetching from GitHub Trending...")
+    gh_articles = fetch_github_trending()
+    all_articles.extend(gh_articles)
+    
+    # Fetch from Juejin
+    print("\nFetching from Juejin...")
+    jj_articles = fetch_juejin_articles()
+    all_articles.extend(jj_articles)
     
     if not all_articles:
-        print("No relevant articles found today.")
-        return {"status": "no_articles", "count": 0}
+        print("\nNo relevant articles found today.")
+        return {"status": "no_articles", "count": 0, "sources_checked": 3}
     
-    # Sort by popularity and take top articles
-    all_articles.sort(key=lambda x: x.get('view_count', 0) + x.get('like_count', 0) * 10, reverse=True)
+    # Sort by popularity (score/stars/views)
+    all_articles.sort(
+        key=lambda x: x.get('view_count', 0) + x.get('like_count', 0) * 2,
+        reverse=True
+    )
     top_articles = all_articles[:MAX_ARTICLES]
     
-    # Fetch cover images for each article
+    # Fetch cover images
     print("\nFetching cover images...")
     for article in top_articles:
-        # Use simple English keywords for image search (avoid Chinese chars in URL)
-        image_path = fetch_image_from_unsplash("ai coding technology")
+        image_path = fetch_image("ai coding technology")
         article['cover_image'] = image_path
     
     print(f"\nTop {len(top_articles)} articles selected:")
     for i, a in enumerate(top_articles, 1):
-        print(f"  {i}. [{a['source']}] {a['title'][:50]}...")
+        print(f"  {i}. [{a['source']}] {a['title'][:60]}...")
     
-    # Output for processing by Hermes
     output = {
         "status": "success",
         "count": len(top_articles),
+        "total_found": len(all_articles),
         "articles": top_articles,
         "date": datetime.now().isoformat()
     }
