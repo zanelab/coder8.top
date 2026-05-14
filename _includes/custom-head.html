@@ -39,3 +39,9 @@
 <meta property="article:tag" content="{{ tag }}">
 {%- endfor -%}
 {%- endif -%}
+
+{%- if jekyll.environment == 'production' -%}
+<!-- Google AdSense Auto Ads -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9115866668597094"
+     crossorigin="anonymous"></script>
+{%- endif -%}
