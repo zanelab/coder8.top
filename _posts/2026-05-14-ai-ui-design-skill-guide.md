@@ -2,8 +2,7 @@
 layout: post
 title: "Transform AI-Generated UI from Ugly to Professional: The UI-UX-Pro-Max-Skill Guide"
 subtitle: "Bridging the gap between functional AI code and polished, professional user interfaces"
-banner:
-  image: /assets/images/posts/20260514090402-526e62db.jpg
+banner: /assets/images/posts/20260515100750-4e5d5184.jpg
   opacity: 0.9
 author: zane.deng
 categories: [AI Assistants]

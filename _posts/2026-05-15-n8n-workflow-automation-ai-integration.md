@@ -2,8 +2,7 @@
 layout: post
 title: "n8n: The Future of Workflow Automation with Native AI Integration"
 subtitle: "Combining visual workflow building with AI capabilities for intelligent automation"
-banner:
-  image: /assets/images/posts/20260515013123-526e62db.jpg
+banner: /assets/images/posts/20260515100753-b7489b3b.jpg
   opacity: 0.9
 author: zane.deng
 categories: [AI Development Tools]

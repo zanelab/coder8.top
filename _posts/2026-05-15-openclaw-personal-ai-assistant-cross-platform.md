@@ -2,8 +2,7 @@
 layout: post
 title: "OpenClaw: Your Personal AI Assistant That Works Everywhere"
 subtitle: "A cross-platform AI assistant bringing intelligent automation to any operating system"
-banner:
-  image: /assets/images/posts/20260515013122-526e62db.jpg
+banner: /assets/images/posts/20260515100754-80e1aa8e.jpg
   opacity: 0.9
 author: zane.deng
 categories: [AI Assistants]

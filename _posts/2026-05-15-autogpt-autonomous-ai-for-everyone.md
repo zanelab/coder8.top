@@ -2,8 +2,7 @@
 layout: post
 title: "AutoGPT: Democratizing Autonomous AI for Everyone"
 subtitle: "Building the future of accessible AI agents that work independently"
-banner:
-  image: /assets/images/posts/20260515013124-526e62db.jpg
+banner: /assets/images/posts/20260515100752-c13a6912.jpg
   opacity: 0.9
 author: zane.deng
 categories: [AI Assistants]
