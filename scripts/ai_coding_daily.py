@@ -41,9 +41,76 @@ ssl_context.verify_mode = ssl.CERT_NONE
 IMAGES_DIR = Path(__file__).parent.parent / "assets" / "images" / "posts"
 IMAGES_DIR.mkdir(parents=True, exist_ok=True)
 
+# Covers directory (local custom cover images)
+COVERS_DIR = Path(__file__).parent.parent / "assets" / "images" / "covers"
+
+# Keyword mapping for local covers (keyword -> list of matching file patterns)
+COVER_KEYWORDS = {
+    "claude": ["claude", "cluade"],
+    "cursor": ["claude", "cluade", "cursor"],
+    "copilot": ["claude", "cluade", "copilot"],
+    "gpt": ["claude", "cluade"],
+    "llm": ["claude", "cluade"],
+    "ai": ["claude", "cluade"],
+    "n8n": ["n8n"],
+    "workflow": ["n8n"],
+    "automation": ["n8n"],
+    "openclaw": ["openclaw"],
+    "opencode": ["openclaw"],
+    "agent": ["openclaw"],
+    "assistant": ["openclaw"],
+    "autogpt": ["openclaw"],
+}
+
+
+def find_local_cover(keyword):
+    """Find a matching cover image from local covers directory"""
+    import random
+    
+    keyword_lower = keyword.lower()
+    
+    # Try to find matching cover by keyword
+    matching_files = []
+    
+    if COVERS_DIR.exists():
+        for file in COVERS_DIR.glob("*.jpg"):
+            file_name = file.name.lower()
+            
+            # Check if file name matches keyword via mapping
+            for key, patterns in COVER_KEYWORDS.items():
+                if key in keyword_lower:
+                    for pattern in patterns:
+                        if pattern in file_name:
+                            matching_files.append(file)
+                            break
+        
+        # If no match via mapping, try direct filename match
+        if not matching_files:
+            for file in COVERS_DIR.glob("*.jpg"):
+                file_name = file.name.lower()
+                # Extract base name (without extension and number suffix)
+                base_name = file_name.replace("-1.jpg", "").replace("-2.jpg", "").replace(".jpg", "")
+                if base_name in keyword_lower or keyword_lower in base_name:
+                    matching_files.append(file)
+    
+    if matching_files:
+        # Randomly select one from matching files
+        selected = random.choice(matching_files)
+        print(f"Found local cover: {selected.name} (keyword: {keyword})")
+        return f"/assets/images/covers/{selected.name}"
+    
+    return None
+
 
 def fetch_image(query="ai coding technology"):
-    """Fetch a free image from picsum.photos"""
+    """Fetch a cover image - first try local covers, then download from picsum.photos"""
+    
+    # First try to find a matching local cover
+    local_cover = find_local_cover(query)
+    if local_cover:
+        return local_cover
+    
+    # No local cover found, download from picsum.photos
     try:
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
         seed = hashlib.md5(query.encode()).hexdigest()[:8]
@@ -59,7 +126,7 @@ def fetch_image(query="ai coding technology"):
             with open(filepath, 'wb') as f:
                 f.write(response.read())
             
-            print(f"Downloaded image: {filename}")
+            print(f"Downloaded image: {filename} (keyword: {query})")
             return f"/assets/images/posts/{filename}"
     except Exception as e:
         print(f"Error downloading image: {e}", file=sys.stderr)
