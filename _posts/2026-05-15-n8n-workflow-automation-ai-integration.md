@@ -2,7 +2,8 @@
 layout: post
 title: "n8n: The Future of Workflow Automation with Native AI Integration"
 subtitle: "Combining visual workflow building with AI capabilities for intelligent automation"
-banner: /assets/images/posts/20260515100753-b7489b3b.jpg
+banner:
+  image: /assets/images/posts/20260515100753-b7489b3b.jpg
   opacity: 0.9
 author: zane.deng
 categories: [AI Development Tools]
@@ -38,6 +39,7 @@ The visual builder dramatically reduces the learning curve for new users while p
 
 What sets n8n apart from competitors is its native integration of AI capabilities directly into the workflow engine:
 
+{% raw %}
 ```javascript
 // Example: AI-powered sentiment analysis node
 {
@@ -53,6 +55,7 @@ What sets n8n apart from competitors is its native integration of AI capabilitie
   }
 }
 ```
+{% endraw %}
 
 This integration enables workflows that can:
 
@@ -173,6 +176,7 @@ Integrate n8n into your development workflow:
 
 Build sophisticated ETL pipelines with AI-enhanced processing:
 
+{% raw %}
 ```python
 # Example workflow for data enrichment
 workflow = {
@@ -200,6 +204,7 @@ workflow = {
     ]
 }
 ```
+{% endraw %}
 
 ## Advanced Features for Power Users
 
@@ -330,6 +335,7 @@ n8n's AI capabilities extend through integrations with leading AI platforms:
 
 ### OpenAI Integration
 
+{% raw %}
 ```json
 {
   "node": "OpenAI Chat Model",
@@ -350,6 +356,7 @@ n8n's AI capabilities extend through integrations with leading AI platforms:
   }
 }
 ```
+{% endraw %}
 
 ### Local AI with Ollama
 
