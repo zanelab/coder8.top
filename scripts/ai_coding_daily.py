@@ -275,10 +275,16 @@ def main():
     )
     top_articles = all_articles[:MAX_ARTICLES]
     
-    # Fetch cover images
+    # Fetch cover images (use article title as keyword for unique images)
     print("\nFetching cover images...")
     for article in top_articles:
-        image_path = fetch_image("ai coding technology")
+        # Use article title as image keyword for unique covers
+        image_keyword = article.get('title', 'ai coding technology')
+        # Clean up title for better image search (remove URLs, special chars)
+        image_keyword = re.sub(r'https?://\S+', '', image_keyword)  # Remove URLs
+        image_keyword = re.sub(r'[^\w\s]', ' ', image_keyword)  # Remove special chars
+        image_keyword = ' '.join(image_keyword.split()[:5])  # Use first 5 words
+        image_path = fetch_image(image_keyword)
         article['cover_image'] = image_path
     
     print(f"\nTop {len(top_articles)} articles selected:")
