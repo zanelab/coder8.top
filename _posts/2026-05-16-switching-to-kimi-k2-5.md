@@ -1,12 +1,18 @@
 ---
 layout: post
 title: "Why I Switched from Claude Code to Kimi K2.5 — and Never Looked Back"
-date: 2026-05-16
-author: Tech Explorer
-categories: [ai-coding]
-tags: [claude, ai-tools, kimi, cursor, productivity]
-cover: /assets/images/covers/claude-1.jpg
-excerpt: "After months of balancing Cursor and Claude Code, switching to Kimi K2.5 transformed my development workflow. Here's what changed and why the new model became my go-to AI coding companion."
+subtitle: "A developer's journey from Cursor and Claude Code to a more efficient AI coding workflow"
+banner:
+  image: /assets/images/covers/cluade-1.jpg
+  opacity: 0.9
+author: zane.deng
+categories: [AI Assistants]
+tags:
+- Claude
+- Kimi
+- Cursor
+- AI Tools
+- Productivity
 ---
 
 ## The AI Coding Assistant Landscape in 2026

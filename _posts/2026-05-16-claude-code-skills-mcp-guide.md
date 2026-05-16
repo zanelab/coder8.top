@@ -1,12 +1,18 @@
 ---
 layout: post
-title: "Stop Using Claude Code Bare! 32 Essential Skills + 8 MCP Configurations for Maximum Productivity"
-date: 2026-05-16
-author: AI Tools Enthusiast
-categories: [ai-coding]
-tags: [claude-code, skills, mcp]
-cover: /assets/images/covers/claude-1.jpg
-excerpt: "Most developers use Claude Code with minimal configuration, missing out on its full potential. After testing dozens of Skills and MCP servers, I've identified the essential configurations that transform Claude Code from a helpful assistant into a powerful development partner."
+title: "Stop Using Claude Code Bare! 32 Essential Skills + 8 MCP Configurations"
+subtitle: "Transform Claude Code from a helpful assistant into a powerful development partner"
+banner:
+  image: /assets/images/covers/cluade-1.jpg
+  opacity: 0.9
+author: zane.deng
+categories: [AI Assistants]
+tags:
+- Claude Code
+- Skills
+- MCP
+- AI Tools
+- Developer Workflow
 ---
 
 ## The Problem with "Bare" Claude Code

@@ -1,11 +1,18 @@
 ---
 layout: post
-title: "GLM-5 Open Source Release: Even Senior Developers Should Take Notice"
-date: 2026-05-16
-categories: [ai-coding]
-tags: [glm-5, zhipu, open-source]
-cover: "/assets/images/covers/openclaw-1.jpg"
-excerpt: "Zhipu AI's GLM-5 sets a new benchmark with 744B parameters and a stunning 77.8 SWE-bench score, challenging even senior developers' assumptions about AI capabilities."
+title: "GLM-5: The 744B Open-Source Model That Challenges Senior Developers"
+subtitle: "Zhipu AI's record-breaking release with 77.8 SWE-bench score"
+banner:
+  image: /assets/images/covers/openclaw-1.jpg
+  opacity: 0.9
+author: zane.deng
+categories: [AI Assistants]
+tags:
+- GLM-5
+- Zhipu
+- Open Source
+- LLM
+- Code Generation
 ---
 
 The AI landscape has been irrevocably transformed. Zhipu AI (智谱AI) has released **GLM-5**, a groundbreaking 744-billion parameter model that now holds the title of **the world's largest open-source language model**. But what truly sets this release apart isn't just its size—it's the model's unprecedented **architecture-level code generation capabilities**, demonstrated by a remarkable **77.8 score on SWE-bench**. This isn't merely another incremental improvement; it's a fundamental shift that has implications reaching far beyond the research community.

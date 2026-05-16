@@ -1,11 +1,18 @@
 ---
 layout: post
-title: "Doubao Joins the AI Coding Revolution: Visual Understanding and 256K Context for Just 9.9 RMB"
-date: 2026-05-16
-categories: [ai-coding]
-tags: [doubao, bytedance, visual-coding]
-cover: "/assets/images/covers/openclaw-1.jpg"
-excerpt: "ByteDance's Doubao breaks new ground as China's first visual-understanding coding model, offering 256K context at an unbeatable 9.9 RMB/month price point."
+title: "Doubao: China's First Visual-Understanding Coding Model at 9.9 RMB"
+subtitle: "ByteDance's game-changing AI assistant with 256K context and multimodal capabilities"
+banner:
+  image: /assets/images/covers/openclaw-1.jpg
+  opacity: 0.9
+author: zane.deng
+categories: [AI Assistants]
+tags:
+- Doubao
+- ByteDance
+- Visual Coding
+- AI Tools
+- Chinese AI
 ---
 
 The landscape of AI-powered coding assistants in China has witnessed a significant shift with ByteDance's introduction of **Doubao (豆包)**, the country's first coding model equipped with visual understanding capabilities. This breakthrough tool combines an impressive 256K context window with multimodal processing abilities, all at a remarkably accessible price point of just **9.9 RMB per month**—roughly equivalent to $1.40 USD.

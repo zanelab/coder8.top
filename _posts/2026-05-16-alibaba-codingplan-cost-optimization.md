@@ -1,12 +1,18 @@
 ---
 layout: post
 title: "Alibaba's CodingPlan: The Smart Solution for AI Coding Cost Optimization"
-date: 2026-05-16
-author: Tech Explorer
-categories: [ai-coding]
-tags: [alibaba, qwen, cost-optimization]
-cover: /assets/images/covers/cluade-1.jpg
-excerpt: "Token costs burning a hole in your AI coding budget? Alibaba's CodingPlan service offers a game-changing solution for developers seeking powerful AI assistance without breaking the bank."
+subtitle: "Say goodbye to token-based pricing headaches with request-based billing"
+banner:
+  image: /assets/images/covers/openclaw-1.jpg
+  opacity: 0.9
+author: zane.deng
+categories: [AI Assistants]
+tags:
+- Alibaba
+- Qwen
+- Cost Optimization
+- AI Coding
+- Cloud Services
 ---
 
 ## The Hidden Cost of AI-Powered Development
