@@ -411,7 +411,18 @@ def main():
     
     if not all_articles:
         print("\nNo relevant articles found today.")
-        return {"status": "no_articles", "count": 0, "sources_checked": 3}
+        return {
+            "status": "no_articles",
+            "date": datetime.now().isoformat(),
+            "statistics": {
+                "hacker_news": {"collected": 0, "new": 0, "duplicates": 0},
+                "github": {"collected": 0, "new": 0, "duplicates": 0},
+                "juejin": {"collected": 0, "new": 0, "duplicates": 0},
+                "total": {"collected": 0, "new": 0, "duplicates": 0, "published": 0}
+            },
+            "all_articles": [],
+            "published_articles": []
+        }
     
     # Filter out already published articles
     print("\nFiltering duplicates...")
@@ -426,7 +437,46 @@ def main():
     
     if not new_articles:
         print("\nAll articles were already published. No new content today.")
-        return {"status": "no_new_articles", "count": 0, "sources_checked": 3, "duplicates": len(all_articles)}
+        return {
+            "status": "no_new_articles",
+            "date": datetime.now().isoformat(),
+            "statistics": {
+                "hacker_news": {
+                    "collected": len(hn_articles),
+                    "new": 0,
+                    "duplicates": len(hn_articles)
+                },
+                "github": {
+                    "collected": len(gh_articles),
+                    "new": 0,
+                    "duplicates": len(gh_articles)
+                },
+                "juejin": {
+                    "collected": len(jj_articles),
+                    "new": 0,
+                    "duplicates": len(jj_articles)
+                },
+                "total": {
+                    "collected": len(all_articles),
+                    "new": 0,
+                    "duplicates": len(all_articles),
+                    "published": 0
+                }
+            },
+            "all_articles": [
+                {
+                    "title": a.get("title", ""),
+                    "source": a.get("source", ""),
+                    "url": a.get("url", ""),
+                    "view_count": a.get("view_count", 0),
+                    "like_count": a.get("like_count", 0),
+                    "author": a.get("author", ""),
+                    "is_duplicate": True
+                }
+                for a in all_articles
+            ],
+            "published_articles": []
+        }
     
     # Sort by popularity (score/stars/views)
     new_articles.sort(
@@ -459,12 +509,43 @@ def main():
     
     output = {
         "status": "success",
-        "count": len(top_articles),
-        "total_found": len(all_articles),
-        "new_articles": len(new_articles),
-        "duplicates_filtered": len(all_articles) - len(new_articles),
-        "articles": top_articles,
-        "date": datetime.now().isoformat()
+        "date": datetime.now().isoformat(),
+        "statistics": {
+            "hacker_news": {
+                "collected": len(hn_articles),
+                "new": len([a for a in hn_articles if not is_article_published(a, history)]),
+                "duplicates": len([a for a in hn_articles if is_article_published(a, history)])
+            },
+            "github": {
+                "collected": len(gh_articles),
+                "new": len([a for a in gh_articles if not is_article_published(a, history)]),
+                "duplicates": len([a for a in gh_articles if is_article_published(a, history)])
+            },
+            "juejin": {
+                "collected": len(jj_articles),
+                "new": len([a for a in jj_articles if not is_article_published(a, history)]),
+                "duplicates": len([a for a in jj_articles if is_article_published(a, history)])
+            },
+            "total": {
+                "collected": len(all_articles),
+                "new": len(new_articles),
+                "duplicates": len(all_articles) - len(new_articles),
+                "published": len(top_articles)
+            }
+        },
+        "all_articles": [
+            {
+                "title": a.get("title", ""),
+                "source": a.get("source", ""),
+                "url": a.get("url", ""),
+                "view_count": a.get("view_count", 0),
+                "like_count": a.get("like_count", 0),
+                "author": a.get("author", ""),
+                "is_duplicate": is_article_published(a, history)
+            }
+            for a in all_articles
+        ],
+        "published_articles": top_articles
     }
     
     print("\n" + json.dumps(output, ensure_ascii=False, indent=2))
