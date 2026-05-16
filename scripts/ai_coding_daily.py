@@ -396,17 +396,7 @@ def main():
     
     all_articles = []
     
-    # Fetch from Hacker News
-    print("\nFetching from Hacker News...")
-    hn_articles = fetch_hacker_news_articles()
-    all_articles.extend(hn_articles)
-    
-    # Fetch from GitHub Trending
-    print("\nFetching from GitHub Trending...")
-    gh_articles = fetch_github_trending()
-    all_articles.extend(gh_articles)
-    
-    # Fetch from Juejin
+    # Fetch from Juejin only
     print("\nFetching from Juejin...")
     jj_articles = fetch_juejin_articles()
     all_articles.extend(jj_articles)
@@ -417,8 +407,6 @@ def main():
             "status": "no_articles",
             "date": datetime.now().isoformat(),
             "statistics": {
-                "hacker_news": {"collected": 0, "new": 0, "duplicates": 0},
-                "github": {"collected": 0, "new": 0, "duplicates": 0},
                 "juejin": {"collected": 0, "new": 0, "duplicates": 0},
                 "total": {"collected": 0, "new": 0, "duplicates": 0, "published": 0}
             },
@@ -443,16 +431,6 @@ def main():
             "status": "no_new_articles",
             "date": datetime.now().isoformat(),
             "statistics": {
-                "hacker_news": {
-                    "collected": len(hn_articles),
-                    "new": 0,
-                    "duplicates": len(hn_articles)
-                },
-                "github": {
-                    "collected": len(gh_articles),
-                    "new": 0,
-                    "duplicates": len(gh_articles)
-                },
                 "juejin": {
                     "collected": len(jj_articles),
                     "new": 0,
@@ -513,16 +491,6 @@ def main():
         "status": "success",
         "date": datetime.now().isoformat(),
         "statistics": {
-            "hacker_news": {
-                "collected": len(hn_articles),
-                "new": len([a for a in hn_articles if not is_article_published(a, history)]),
-                "duplicates": len([a for a in hn_articles if is_article_published(a, history)])
-            },
-            "github": {
-                "collected": len(gh_articles),
-                "new": len([a for a in gh_articles if not is_article_published(a, history)]),
-                "duplicates": len([a for a in gh_articles if is_article_published(a, history)])
-            },
             "juejin": {
                 "collected": len(jj_articles),
                 "new": len([a for a in jj_articles if not is_article_published(a, history)]),
