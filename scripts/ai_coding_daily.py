@@ -335,8 +335,8 @@ def fetch_juejin_articles():
     try:
         data = json.dumps({
             "id_type": 2,
-            "sort_type": 200,
-            "cate_id": "6809637767543259144",
+            "sort_type": 200,  # 热门排序
+            "cate_id": "6809637773935378440",  # 人工智能分类
             "cursor": "0",
             "limit": 20
         }).encode('utf-8')
@@ -348,13 +348,15 @@ def fetch_juejin_articles():
             if result.get("err_no") == 0:
                 for item in result.get("data", []):
                     article_info = item.get("article_info", {})
+                    author_info = item.get("author_user_info", {})
                     title = article_info.get("title", "")
                     article_id = article_info.get("article_id", "")
                     
                     if matches_ai_keywords(title):
                         detail = fetch_juejin_article_detail(article_id)
                         content = detail.get("content", "") if detail else article_info.get("brief_content", "")
-                        author = detail.get("author", "") if detail else article_info.get("author_user_info", {}).get("user_name", "")
+                        # Get author from list API (detail API often fails)
+                        author = detail.get("author", "") if detail else author_info.get("user_name", "")
                         
                         articles.append({
                             "title": detail.get("title", title) if detail else title,
