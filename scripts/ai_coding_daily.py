@@ -23,6 +23,8 @@ import re
 POSTS_DIR = Path(__file__).parent.parent / "_posts"
 MAX_ARTICLES = 3  # Max articles per day
 MAX_PER_SOURCE = 5  # Max articles per source
+HISTORY_FILE = Path(__file__).parent.parent / "scripts" / "published_history.json"
+HISTORY_DAYS = 30  # Keep history for 30 days
 
 # Keywords for AI coding topics
 AI_KEYWORDS = [
@@ -137,6 +139,76 @@ def matches_ai_keywords(text):
     """Check if text matches AI coding keywords"""
     text_lower = text.lower()
     return any(kw in text_lower for kw in AI_KEYWORDS)
+
+
+# ========== Published History ==========
+
+def load_published_history():
+    """Load history of published articles"""
+    if HISTORY_FILE.exists():
+        try:
+            with open(HISTORY_FILE, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"Error loading history: {e}", file=sys.stderr)
+    return {"articles": []}
+
+
+def save_published_history(history):
+    """Save history to file"""
+    try:
+        with open(HISTORY_FILE, 'w', encoding='utf-8') as f:
+            json.dump(history, f, ensure_ascii=False, indent=2)
+        print(f"History saved: {len(history['articles'])} articles")
+    except Exception as e:
+        print(f"Error saving history: {e}", file=sys.stderr)
+
+
+def clean_old_history(history):
+    """Remove articles older than HISTORY_DAYS"""
+    cutoff = datetime.now() - timedelta(days=HISTORY_DAYS)
+    history['articles'] = [
+        a for a in history['articles']
+        if datetime.fromisoformat(a.get('published_date', '2000-01-01')) > cutoff
+    ]
+    return history
+
+
+def generate_article_id(article):
+    """Generate unique ID for article based on title and URL"""
+    # Use URL as primary identifier, fallback to title hash
+    url = article.get('url', '')
+    if url:
+        # Normalize URL (remove trailing slashes, lowercase)
+        url = url.rstrip('/').lower()
+        return hashlib.md5(url.encode()).hexdigest()
+    else:
+        title = article.get('title', '')
+        return hashlib.md5(title.encode()).hexdigest()
+
+
+def is_article_published(article, history):
+    """Check if article was already published"""
+    article_id = generate_article_id(article)
+    for published in history['articles']:
+        if published.get('id') == article_id:
+            return True
+        # Also check title similarity (exact match)
+        if published.get('title') == article.get('title'):
+            return True
+    return False
+
+
+def mark_article_published(article, history):
+    """Mark article as published in history"""
+    history['articles'].append({
+        'id': generate_article_id(article),
+        'title': article.get('title', ''),
+        'url': article.get('url', ''),
+        'source': article.get('source', ''),
+        'published_date': datetime.now().isoformat()
+    })
+    return history
 
 
 # ========== Hacker News ==========
@@ -314,6 +386,12 @@ def main():
     
     POSTS_DIR.mkdir(parents=True, exist_ok=True)
     
+    # Load published history
+    print("\nLoading published history...")
+    history = load_published_history()
+    history = clean_old_history(history)
+    print(f"  History contains {len(history['articles'])} recent articles")
+    
     all_articles = []
     
     # Fetch from Hacker News
@@ -335,12 +413,27 @@ def main():
         print("\nNo relevant articles found today.")
         return {"status": "no_articles", "count": 0, "sources_checked": 3}
     
+    # Filter out already published articles
+    print("\nFiltering duplicates...")
+    new_articles = []
+    for article in all_articles:
+        if is_article_published(article, history):
+            print(f"  Skipping (already published): {article['title'][:50]}...")
+        else:
+            new_articles.append(article)
+    
+    print(f"  {len(new_articles)} new articles after filtering")
+    
+    if not new_articles:
+        print("\nAll articles were already published. No new content today.")
+        return {"status": "no_new_articles", "count": 0, "sources_checked": 3, "duplicates": len(all_articles)}
+    
     # Sort by popularity (score/stars/views)
-    all_articles.sort(
+    new_articles.sort(
         key=lambda x: x.get('view_count', 0) + x.get('like_count', 0) * 2,
         reverse=True
     )
-    top_articles = all_articles[:MAX_ARTICLES]
+    top_articles = new_articles[:MAX_ARTICLES]
     
     # Fetch cover images (use article title as keyword for unique images)
     print("\nFetching cover images...")
@@ -358,10 +451,18 @@ def main():
     for i, a in enumerate(top_articles, 1):
         print(f"  {i}. [{a['source']}] {a['title'][:60]}...")
     
+    # Mark articles as published in history
+    print("\nUpdating published history...")
+    for article in top_articles:
+        history = mark_article_published(article, history)
+    save_published_history(history)
+    
     output = {
         "status": "success",
         "count": len(top_articles),
         "total_found": len(all_articles),
+        "new_articles": len(new_articles),
+        "duplicates_filtered": len(all_articles) - len(new_articles),
         "articles": top_articles,
         "date": datetime.now().isoformat()
     }
@@ -372,4 +473,6 @@ def main():
 
 if __name__ == "__main__":
     result = main()
-    sys.exit(0 if result.get("status") in ["success", "no_articles"] else 1)
+    # Allow no_articles and no_new_articles as valid exits
+    valid_statuses = ["success", "no_articles", "no_new_articles"]
+    sys.exit(0 if result.get("status") in valid_statuses else 1)
