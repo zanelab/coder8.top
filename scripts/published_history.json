@@ -48,6 +48,69 @@
       "url": "",
       "source": "imported",
       "published_date": "2026-05-16T08:00:00"
+    },
+    {
+      "id": "0bd21c2cf11fc945041c46e569bfc6c6",
+      "title": "openclaw/openclaw: Your own personal AI assistant. Any OS. Any Platform. The lobster way. 🦞 ",
+      "url": "https://github.com/openclaw/openclaw",
+      "source": "github",
+      "published_date": "2026-05-16T04:23:23.385787"
+    },
+    {
+      "id": "feb34faf0b30f401277d67a5fa9c2797",
+      "title": "n8n-io/n8n: Fair-code workflow automation platform with native AI capabilities. Combine visu",
+      "url": "https://github.com/n8n-io/n8n",
+      "source": "github",
+      "published_date": "2026-05-16T04:23:23.385841"
+    },
+    {
+      "id": "1e59081bb62465b52d487aa792fa40f2",
+      "title": "Significant-Gravitas/AutoGPT: AutoGPT is the vision of accessible AI for everyone, to use and to build on. Our",
+      "url": "https://github.com/Significant-Gravitas/AutoGPT",
+      "source": "github",
+      "published_date": "2026-05-16T04:23:23.385862"
+    },
+    {
+      "id": "25a9247d170908c5d7555c10a8230bec",
+      "title": "别再裸用 Claude Code 了！32 个亲测Skills + 8 个 MCP，开发效率直接拉满！",
+      "url": "https://juejin.cn/post/7620060655607857178",
+      "source": "juejin",
+      "published_date": "2026-05-16T06:04:18.421076"
+    },
+    {
+      "id": "235f29336b383c84418695d226781ce9",
+      "title": "Claude Code 换成了Kimi K2.5后，我再也回不去了",
+      "url": "https://juejin.cn/post/7611432757572141096",
+      "source": "juejin",
+      "published_date": "2026-05-16T06:04:18.421128"
+    },
+    {
+      "id": "d26523d51605e868944caf3567d31987",
+      "title": "再见 Openclaw，桌面端 Agent 起飞了！",
+      "url": "https://juejin.cn/post/7613680097548795919",
+      "source": "juejin",
+      "published_date": "2026-05-16T06:04:18.421148"
+    },
+    {
+      "id": "797966bbbb4c68906521b7f98c9d0f26",
+      "title": "把AI用成神，你只需要一个Skills商店",
+      "url": "https://juejin.cn/post/7598699872552009764",
+      "source": "juejin",
+      "published_date": "2026-05-17T00:01:00.274966"
+    },
+    {
+      "id": "e29679f0d386becd5c24087c371595b4",
+      "title": "DeepSeek V4+Claude Code一手实战！夯爆了还是拉完了？",
+      "url": "https://juejin.cn/post/7632239365552963630",
+      "source": "juejin",
+      "published_date": "2026-05-17T00:01:00.275018"
+    },
+    {
+      "id": "c39d33053e88bf92bef5e4152d0748c2",
+      "title": "一口气讲清楚 Agent、RAG、Skill、MCP 到底是什么？",
+      "url": "https://juejin.cn/post/7621878684524740671",
+      "source": "juejin",
+      "published_date": "2026-05-18T00:01:02.579403"
     }
   ]
 }
