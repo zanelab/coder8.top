@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
 Daily AI Coding Article Publishing Workflow
-- Fetches top articles directly from sources
-- AI rewrites via Hermes Agent model (embedded prompt)
-- Generates Jekyll posts
+- Fetches top articles from multiple sources
+- Generates Jekyll posts with placeholder for AI rewriting
+- Title/content translation done by Hermes Agent's own model
 - Commits and pushes to GitHub
 """
 
@@ -22,20 +22,16 @@ from pathlib import Path
 WORKSPACE = Path(__file__).parent.parent
 POSTS_DIR = WORKSPACE / "_posts"
 POSTS_IMAGES_DIR = WORKSPACE / "assets" / "images" / "posts"
-HISTORY_FILE = WORKSPACE / "scripts" / "published_history.json"
 
 ssl_ctx = ssl.create_default_context()
 ssl_ctx.check_hostname = False
 ssl_ctx.verify_mode = ssl.CERT_NONE
 
-# ========== Direct Fetcher (bypasses published history) ==========
+# ========== Fetchers ==========
 
 def fetch_juejin():
-    """Fetch from Juejin directly"""
     articles = []
     url = "https://api.juejin.cn/recommend_api/v1/article/recommend_cate_feed"
-    headers = {"Content-Type": "application/json"}
-
     try:
         data = json.dumps({
             "id_type": 2,
@@ -44,18 +40,16 @@ def fetch_juejin():
             "cursor": "0",
             "limit": 20
         }).encode('utf-8')
-
-        req = urllib.request.Request(url, data=data, headers=headers, method='POST')
+        req = urllib.request.Request(url, data=data, headers={"Content-Type": "application/json"}, method='POST')
         with urllib.request.urlopen(req, timeout=15, context=ssl_ctx) as resp:
             result = json.loads(resp.read().decode('utf-8'))
-
         if result.get("err_no") == 0:
             for item in result.get("data", [])[:10]:
                 art = item.get("article_info", {})
                 articles.append({
                     "title": art.get("title", ""),
                     "url": f"https://juejin.cn/post/{art.get('article_id', '')}",
-                    "content_preview": art.get("brief_content", "")[:300],
+                    "content_preview": art.get("brief_content", "")[:500],
                     "source": "juejin",
                     "author": item.get("author_user_info", {}).get("user_name", ""),
                     "view_count": art.get('view_count', 0),
@@ -63,19 +57,15 @@ def fetch_juejin():
                 })
     except Exception as e:
         print(f"Juejin error: {e}")
-
     return articles
 
 def fetch_hackernews():
-    """Fetch from HN Algolia"""
     articles = []
     url = "https://hn.algolia.com/api/v1/search?query=ai+OR+llm+OR+copilot+OR+claude+OR+cursor&tags=story&hitsPerPage=10"
-
     try:
         req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
         with urllib.request.urlopen(req, timeout=20, context=ssl_ctx) as resp:
             data = json.loads(resp.read().decode())
-
         for hit in data.get('hits', [])[:5]:
             articles.append({
                 "title": hit.get('title', ''),
@@ -88,15 +78,12 @@ def fetch_hackernews():
             })
     except Exception as e:
         print(f"HN error: {e}")
-
     return articles
 
 def fetch_github_trending():
-    """Fetch from GitHub"""
     articles = []
     query = urllib.parse.quote("ai coding assistant OR llm programming OR copilot cursor")
     url = f"https://api.github.com/search/repositories?q={query}+language:python&sort=stars&order=desc&per_page=5"
-
     try:
         req = urllib.request.Request(url, headers={
             "User-Agent": "Mozilla/5.0",
@@ -104,7 +91,6 @@ def fetch_github_trending():
         })
         with urllib.request.urlopen(req, timeout=30, context=ssl_ctx) as resp:
             data = json.loads(resp.read().decode())
-
         for repo in data.get('items', [])[:3]:
             articles.append({
                 "title": f"{repo.get('full_name', '')}: {repo.get('description', '') or ''}",
@@ -117,7 +103,6 @@ def fetch_github_trending():
             })
     except Exception as e:
         print(f"GitHub error: {e}")
-
     return articles
 
 # ========== Article Processing ==========
@@ -127,7 +112,6 @@ AI_CODING_KEYWORDS = [
     "gpt", "deepseek", "agent", "code generation", "mcp", "autonomous",
     "编程助手", "代码生成", "智能编程",
 ]
-
 BOOST_KEYWORDS = ["cursor", "claude code", "copilot", "deepseek", "aider", "mcp", "agent"]
 
 def score_article(title, content=''):
@@ -140,7 +124,6 @@ def classify_article(title, content=''):
     text = f"{title} {content}".lower()
     tutorial = ['tutorial', 'guide', 'how to', 'step', '入门', '教程', '实战', '手把手', 'build']
     academic = ['research', 'analysis', '原理', '研究', '深入', '架构', 'comparison', '评测']
-
     t = sum(1 for p in tutorial if p in text)
     a = sum(1 for p in academic if p in text)
     return 'tutorial' if t > a else 'academic'
@@ -165,85 +148,91 @@ def download_cover(title):
         print(f"Cover error: {e}")
         return None
 
-# ========== AI Rewrite (write directly to file) ==========
+# ========== Jekyll Post Generation ==========
 
-def rewrite_article(article, index, total):
-    """Generate AI rewrite prompt for this article, output as Jekyll post"""
+def create_jekyll_post(article, style):
+    """Create a Jekyll post with English title and AI rewrite placeholder"""
     title = article['title']
     url = article['url']
-    content = article.get('content_preview', '')
+    content_preview = article.get('content_preview', '')
     source = article['source']
-    style = classify_article(title, content)
     author = article.get('author', 'Unknown')
+    views = article.get('view_count', 0)
+    likes = article.get('like_count', 0)
 
     slug = generate_slug(title)
     filename = f"{datetime.now().strftime('%Y-%m-%d')}-{slug}.md"
     filepath = POSTS_DIR / filename
 
-    # Determine translation style message
-    style_msg = {
-        'academic': 'This is an academic/article piece. Rewrite with thorough depth, technical background, comparisons, and detailed analysis. Include relevant context and make it comprehensive for an international audience.',
-        'tutorial': 'This is a tutorial/guide piece. Rewrite as a step-by-step hands-on guide with code examples, prerequisites, common pitfalls to avoid, and practical tips. Make each step clear and executable.'
-    }[style]
-
-    # Build the Jekyll post content with embedded rewrite instruction
+    # Cover image
     cover = download_cover(title)
-    cover_line = f"\ncover_image: {cover}\n" if cover else ""
+    cover_path = cover if cover else "/assets/images/covers/cluade-1.jpg"
 
-    jekyll_post = f'''---
-layout: post
-title: "{title}"
-date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S +0800')}
-categories: [AI Coding, Translation]
-tags: [AI, Coding, Translation, {source}]
-source_url: "{url}"
-author: "{author}"
-translation_style: {style}
-translation_status: pending
-{cover_line}---
+    # Rewrite instructions based on style
+    if style == 'tutorial':
+        rewrite_instructions = """This is a tutorial/guide article. Rewrite as a step-by-step hands-on guide with:
+- Clear prerequisites and expected outcomes
+- Numbered steps that are executable
+- Code examples that are complete and runnable
+- "Note" and "Warning" callouts where relevant
+- A summary section at the end"""
+    else:
+        rewrite_instructions = """This is an academic/informational article. Rewrite with:
+- Thorough technical depth and background context
+- Structured headings for logical flow
+- Key data points and comparisons preserved
+- Analysis and insights expanded
+- A conclusions section at the end"""
 
-# {title}
+    # Build post content (without title in body - title only in frontmatter)
+    post_body = f"""## Translation Notes
 
-**Source:** [{url}]({url})  
-**Author:** {author}  
-**Style:** {style}  
-**Views:** {article.get('view_count', 0):,} | **Likes:** {article.get('like_count', 0):,}
+**Original Title:** {title}
+**Original URL:** {url}
+**Author:** {author}
+**Views:** {views:,} | **Likes:** {likes:,}
+**Type:** {style}
 
 ---
 
-## AI Rewrite Required
+**Content to translate and rewrite in English:**
 
-This article needs to be rewritten in English for an international audience.
+{content_preview}
 
-**Translation Style:** {style_msg}
+---
 
-**Original Title:** {title}  
-**Original URL:** {url}
+**Rewrite Instructions:**
 
-**Original Content Preview:**
-{content}
-
-**Instructions:**
-- Rewrite the full article in English
-- Maintain all key technical information and data points
-- Use proper Markdown formatting with headings, code blocks, and lists
-- For tutorials: include step-by-step instructions with code examples
-- For academic: include background context and deeper analysis
+{rewrite_instructions}
 
 <!-- 
-BEGIN REWRITE - Replace everything below this comment with your English rewrite.
-Keep the frontmatter above unchanged.
--->
+Please translate and rewrite the content above into English.
+- Title should also be translated to English (update in frontmatter)
+- Remove this comment when complete.
+-->"""
 
-[AI rewrite pending - please rewrite the content above in English with proper Markdown formatting. Make it comprehensive and well-structured. Remove this comment when complete.]
+    # Correct frontmatter format
+    frontmatter = f"""---
+layout: post
+title: "{title}"
+subtitle: ""
+banner:
+  image: {cover_path}
+  opacity: 0.7
+author: zane.deng
+categories: [AI Coding]
+tags:
+- AI Coding
+- Translation
+- {source}
+---
 
-'''
+"""
 
     with open(filepath, 'w', encoding='utf-8') as f:
-        f.write(jekyll_post)
+        f.write(frontmatter + post_body)
 
-    print(f"  [{index}/{total}] Created: {filename} ({style})")
-    return filename
+    return filepath
 
 # ========== Git Operations ==========
 
@@ -264,90 +253,52 @@ def main():
     print("Daily AI Coding Article Publishing")
     print("=" * 60)
 
-    # Step 1: Fetch from multiple sources
-    print("\n[1/4] Fetching articles from sources...")
-
+    # Step 1: Fetch
+    print("\n[1/4] Fetching articles...")
     all_articles = []
-
-    # Fetch from Juejin
-    print("  Fetching Juejin...")
-    jj = fetch_juejin()
-    print(f"    -> {len(jj)} articles")
-    all_articles.extend(jj)
-
-    # Fetch from HN
-    print("  Fetching Hacker News...")
-    hn = fetch_hackernews()
-    print(f"    -> {len(hn)} articles")
-    all_articles.extend(hn)
-
-    # Fetch from GitHub
-    print("  Fetching GitHub...")
-    gh = fetch_github_trending()
-    print(f"    -> {len(gh)} articles")
-    all_articles.extend(gh)
-
-    print(f"\n  Total fetched: {len(all_articles)}")
+    for name, fetcher in [("Juejin", fetch_juejin), ("Hacker News", fetch_hackernews), ("GitHub", fetch_github_trending)]:
+        print(f"  Fetching {name}...")
+        arts = fetcher()
+        print(f"    -> {len(arts)} articles")
+        all_articles.extend(arts)
 
     if not all_articles:
         print("No articles fetched.")
         return {"status": "no_articles"}
 
-    # Step 2: Score and rank
+    # Step 2: Score and filter
     print("\n[2/4] Scoring and filtering...")
-
-    scored = []
-    for art in all_articles:
-        score = score_article(art['title'], art.get('content_preview', ''))
-        if score >= 1:  # At least one AI coding keyword
-            scored.append((score, art))
-
+    scored = [(score_article(a['title'], a.get('content_preview', '')), a) for a in all_articles]
+    scored = [(s, a) for s, a in scored if s >= 1]
     scored.sort(key=lambda x: x[0], reverse=True)
+    top = [a for _, a in scored[:3]]
 
-    # Take top 3
-    top = [art for score, art in scored[:3]]
-
-    print(f"  Top 3 after filtering:")
+    print(f"  Top 3 articles:")
     for i, art in enumerate(top, 1):
         print(f"    {i}. [{art['source']}] {art['title'][:55]}...")
 
     if not top:
-        print("No relevant articles found.")
         return {"status": "no_relevant"}
 
-    # Step 3: Generate Jekyll posts with rewrite placeholder
+    # Step 3: Generate posts
     print("\n[3/4] Generating Jekyll posts...")
-    published = []
-
+    created = []
     for i, art in enumerate(top, 1):
-        fname = rewrite_article(art, i, len(top))
-        published.append(fname)
+        style = classify_article(art['title'], art.get('content_preview', ''))
+        path = create_jekyll_post(art, style)
+        print(f"  [{i}/{len(top)}] {path.name}")
+        created.append(path)
 
-    # Step 4: Git commit & push
+    # Step 4: Git push
     print("\n[4/4] Git commit & push...")
     result = git_push()
+    print(f"  -> {result.get('status')}")
 
     print("\n" + "=" * 60)
-    print(f"Done! {len(published)} posts created")
-    print(f"Git: {result.get('status')}")
+    print(f"Done! {len(created)} posts created")
     print("=" * 60)
 
-    # Print rewrite instructions
-    print("\n[REWRITE INSTRUCTIONS FOR AGENT]")
-    print("=" * 60)
-    for i, art in enumerate(published, 1):
-        style = classify_article(art['title'], art.get('content_preview', ''))
-        print(f"\n{i}. {art['title']}")
-        print(f"   File: {POSTS_DIR / published[i-1]}")
-        print(f"   Style: {style}")
-        print(f"   URL: {art['url']}")
-
-    return {
-        "status": "success",
-        "published": published,
-        "articles": top,
-        "git": result
-    }
+    return {"status": "success", "created": len(created), "git": result}
 
 
 if __name__ == "__main__":
