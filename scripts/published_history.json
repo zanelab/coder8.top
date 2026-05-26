@@ -1,1 +1,25 @@
-{"articles": []}
+{
+  "articles": [
+    {
+      "id": "25a9247d170908c5d7555c10a8230bec",
+      "title": "别再裸用 Claude Code 了！32 个亲测Skills + 8 个 MCP，开发效率直接拉满！",
+      "url": "https://juejin.cn/post/7620060655607857178",
+      "source": "juejin",
+      "published_date": "2026-05-26T11:02:36.566072"
+    },
+    {
+      "id": "235f29336b383c84418695d226781ce9",
+      "title": "Claude Code 换成了Kimi K2.5后，我再也回不去了",
+      "url": "https://juejin.cn/post/7611432757572141096",
+      "source": "juejin",
+      "published_date": "2026-05-26T11:02:36.566126"
+    },
+    {
+      "id": "31a0279522467e07905a32d965224d10",
+      "title": "DeepSeek-V4-Pro 写代码到底行不行？我拿 GLM-5.1 跟它硬碰硬比了一轮",
+      "url": "https://juejin.cn/post/7632230684447211554",
+      "source": "juejin",
+      "published_date": "2026-05-26T11:02:36.566146"
+    }
+  ]
+}
