@@ -45,7 +45,7 @@ def save_history(history):
         with open(HISTORY_FILE, 'w', encoding='utf-8') as f:
             json.dump(history, f, ensure_ascii=False, indent=2)
     except Exception as e:
-        print(f"History save error: {e}")
+        print(f"[WARNING] 历史记录保存失败: {e}")
 
 def article_id(article):
     url = article.get('url', '').rstrip('/').lower()
@@ -107,7 +107,7 @@ def fetch_juejin():
                     "like_count": art.get('digg_count', 0),
                 })
     except Exception as e:
-        print(f"Juejin error: {e}")
+        pass
     return articles
 
 def fetch_hackernews():
@@ -128,7 +128,7 @@ def fetch_hackernews():
                 "like_count": hit.get('points', 0),
             })
     except Exception as e:
-        print(f"HN error: {e}")
+        pass
     return articles
 
 def fetch_github_trending():
@@ -153,7 +153,7 @@ def fetch_github_trending():
                 "like_count": repo.get('stargazers_count', 0),
             })
     except Exception as e:
-        print(f"GitHub error: {e}")
+        pass
     return articles
 
 # ========== Article Processing ==========
@@ -196,7 +196,6 @@ def download_cover(title):
                 f.write(resp.read())
         return f"/assets/images/posts/{filename}"
     except Exception as e:
-        print(f"Cover error: {e}")
         return None
 
 # ========== Jekyll Post Generation ==========
@@ -215,11 +214,9 @@ def create_jekyll_post(article, style):
     filename = f"{datetime.now().strftime('%Y-%m-%d')}-{slug}.md"
     filepath = POSTS_DIR / filename
 
-    # Cover image
     cover = download_cover(title)
     cover_path = cover if cover else "/assets/images/covers/cluade-1.jpg"
 
-    # Rewrite instructions based on style
     if style == 'tutorial':
         rewrite_instructions = """This is a tutorial/guide article. Rewrite as a step-by-step hands-on guide with:
 - Clear prerequisites and expected outcomes
@@ -235,7 +232,6 @@ def create_jekyll_post(article, style):
 - Analysis and insights expanded
 - A conclusions section at the end"""
 
-    # Build post content (without title in body - title only in frontmatter)
     post_body = f"""## Translation Notes
 
 **Original Title:** {title}
@@ -262,7 +258,6 @@ Please translate and rewrite the content above into English.
 - Remove this comment when complete.
 -->"""
 
-    # Correct frontmatter format
     frontmatter = f"""---
 layout: post
 title: "{title}"
@@ -300,81 +295,83 @@ def git_push():
 # ========== Main ==========
 
 def main():
-    print("=" * 60)
-    print("Daily AI Coding Article Publishing")
-    print("=" * 60)
-
-    # Step 1: Fetch
-    print("\n[1/5] Fetching articles...")
+    # ---- Step 1: Fetch (silent) ----
     all_articles = []
-    for name, fetcher in [("Juejin", fetch_juejin), ("Hacker News", fetch_hackernews), ("GitHub", fetch_github_trending)]:
-        print(f"  Fetching {name}...")
-        arts = fetcher()
-        print(f"    -> {len(arts)} articles")
-        all_articles.extend(arts)
+    for fetcher in [fetch_juejin, fetch_hackernews, fetch_github_trending]:
+        all_articles.extend(fetcher())
 
     if not all_articles:
-        print("No articles fetched.")
         return {"status": "no_articles"}
 
-    # Step 2: Load history and filter duplicates
-    print("\n[2/5] Loading history and filtering duplicates...")
-    history = load_history()
-    history = clean_history(history)
-    print(f"  History: {len(history['articles'])} articles")
-
-    new_articles = []
-    for a in all_articles:
-        if is_published(a, history):
-            print(f"  [SKIP] {a['title'][:55]}...")
-        else:
-            new_articles.append(a)
-
-    print(f"  {len(new_articles)} new articles after filtering")
+    # ---- Step 2: Filter duplicates (silent) ----
+    history = clean_history(load_history())
+    new_articles = [a for a in all_articles if not is_published(a, history)]
 
     if not new_articles:
-        print("All fetched articles were already published.")
-        save_history(history)
         return {"status": "all_duplicates"}
 
-    # Step 3: Score and filter
-    print("\n[3/5] Scoring and filtering...")
+    # ---- Step 3: Score and pick top 3 (silent) ----
     scored = [(score_article(a['title'], a.get('content_preview', '')), a) for a in new_articles]
     scored = [(s, a) for s, a in scored if s >= 1]
     scored.sort(key=lambda x: x[0], reverse=True)
     top = [a for _, a in scored[:3]]
 
-    print(f"  Top 3 articles:")
-    for i, art in enumerate(top, 1):
-        print(f"    {i}. [{art['source']}] {art['title'][:55]}...")
-
     if not top:
         return {"status": "no_relevant"}
 
-    # Step 4: Generate posts
-    print("\n[4/5] Generating Jekyll posts...")
-    created = []
-    for i, art in enumerate(top, 1):
+    # ---- Step 4: Generate posts (silent) ----
+    created_paths = []
+    for art in top:
         style = classify_article(art['title'], art.get('content_preview', ''))
         path = create_jekyll_post(art, style)
-        print(f"  [{i}/{len(top)}] {path.name}")
-        created.append(path)
+        created_paths.append(path)
 
-    # Mark as published and save history
     for art in top:
         history = mark_published(art, history)
     save_history(history)
 
-    # Step 5: Git push
-    print("\n[5/5] Git commit & push...")
-    result = git_push()
-    print(f"  -> {result.get('status')}")
+    # ---- Step 5: Git push (silent) ----
+    git_result = git_push()
 
-    print("\n" + "=" * 60)
-    print(f"Done! {len(created)} posts created")
-    print("=" * 60)
+    # ---- Print friendly report ----
+    source_labels = {"juejin": "掘金", "hackernews": "Hacker News", "github": "GitHub"}
+    type_labels = {"tutorial": "教程", "academic": "深度"}
 
-    return {"status": "success", "created": len(created), "git": result}
+    date_str = datetime.now().strftime("%Y-%m-%d")
+
+    lines = [
+        f"📅 {date_str} 每日文章发布报告",
+        "",
+        f"✅ 今日发布 {len(top)} 篇文章：",
+    ]
+    for i, art in enumerate(top, 1):
+        src = source_labels.get(art['source'], art['source'])
+        style = type_labels.get(classify_article(art['title'], art.get('content_preview', '')), '文章')
+        title = art['title'][:40] + ('...' if len(art['title']) > 40 else '')
+        views = art.get('view_count', 0)
+        lines.append(f"  {i}. [{src}] {title}")
+        lines.append(f"     📊 {views:,} 阅读 · {style} · 来源: {src}")
+
+    lines.append("")
+    lines.append(f"📁 已创建文件：")
+    for p in created_paths:
+        lines.append(f"  • {p.name}")
+
+    if git_result.get('status') == 'success':
+        lines.append("")
+        lines.append(f"🚀 已推送到 GitHub")
+    else:
+        lines.append("")
+        lines.append(f"⚠️ Git 推送失败: {git_result.get('error', '未知错误')}")
+
+    print("\n".join(lines))
+
+    return {
+        "status": "success",
+        "created": len(top),
+        "articles": [{"title": a['title'], "source": a['source']} for a in top],
+        "git": git_result
+    }
 
 
 if __name__ == "__main__":
