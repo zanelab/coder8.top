@@ -16,16 +16,67 @@ import urllib.request
 import urllib.parse
 import ssl
 import hashlib
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 WORKSPACE = Path(__file__).parent.parent
 POSTS_DIR = WORKSPACE / "_posts"
 POSTS_IMAGES_DIR = WORKSPACE / "assets" / "images" / "posts"
+HISTORY_FILE = WORKSPACE / "scripts" / "published_history.json"
+HISTORY_DAYS = 30
 
 ssl_ctx = ssl.create_default_context()
 ssl_ctx.check_hostname = False
 ssl_ctx.verify_mode = ssl.CERT_NONE
+
+# ========== Published History ==========
+
+def load_history():
+    if HISTORY_FILE.exists():
+        try:
+            with open(HISTORY_FILE, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except Exception:
+            pass
+    return {"articles": []}
+
+def save_history(history):
+    try:
+        with open(HISTORY_FILE, 'w', encoding='utf-8') as f:
+            json.dump(history, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        print(f"History save error: {e}")
+
+def article_id(article):
+    url = article.get('url', '').rstrip('/').lower()
+    if url:
+        return hashlib.md5(url.encode()).hexdigest()
+    return hashlib.md5(article['title'].encode()).hexdigest()
+
+def is_published(article, history):
+    aid = article_id(article)
+    for a in history['articles']:
+        if a.get('id') == aid or a.get('title') == article['title']:
+            return True
+    return False
+
+def mark_published(article, history):
+    history['articles'].append({
+        'id': article_id(article),
+        'title': article['title'],
+        'url': article['url'],
+        'source': article['source'],
+        'published_date': datetime.now().isoformat()
+    })
+    return history
+
+def clean_history(history):
+    cutoff = datetime.now() - timedelta(days=HISTORY_DAYS)
+    history['articles'] = [
+        a for a in history['articles']
+        if datetime.fromisoformat(a.get('published_date', '2000-01-01')) > cutoff
+    ]
+    return history
 
 # ========== Fetchers ==========
 
@@ -205,7 +256,7 @@ def create_jekyll_post(article, style):
 
 {rewrite_instructions}
 
-<!-- 
+<!--
 Please translate and rewrite the content above into English.
 - Title should also be translated to English (update in frontmatter)
 - Remove this comment when complete.
@@ -254,7 +305,7 @@ def main():
     print("=" * 60)
 
     # Step 1: Fetch
-    print("\n[1/4] Fetching articles...")
+    print("\n[1/5] Fetching articles...")
     all_articles = []
     for name, fetcher in [("Juejin", fetch_juejin), ("Hacker News", fetch_hackernews), ("GitHub", fetch_github_trending)]:
         print(f"  Fetching {name}...")
@@ -266,9 +317,29 @@ def main():
         print("No articles fetched.")
         return {"status": "no_articles"}
 
-    # Step 2: Score and filter
-    print("\n[2/4] Scoring and filtering...")
-    scored = [(score_article(a['title'], a.get('content_preview', '')), a) for a in all_articles]
+    # Step 2: Load history and filter duplicates
+    print("\n[2/5] Loading history and filtering duplicates...")
+    history = load_history()
+    history = clean_history(history)
+    print(f"  History: {len(history['articles'])} articles")
+
+    new_articles = []
+    for a in all_articles:
+        if is_published(a, history):
+            print(f"  [SKIP] {a['title'][:55]}...")
+        else:
+            new_articles.append(a)
+
+    print(f"  {len(new_articles)} new articles after filtering")
+
+    if not new_articles:
+        print("All fetched articles were already published.")
+        save_history(history)
+        return {"status": "all_duplicates"}
+
+    # Step 3: Score and filter
+    print("\n[3/5] Scoring and filtering...")
+    scored = [(score_article(a['title'], a.get('content_preview', '')), a) for a in new_articles]
     scored = [(s, a) for s, a in scored if s >= 1]
     scored.sort(key=lambda x: x[0], reverse=True)
     top = [a for _, a in scored[:3]]
@@ -280,8 +351,8 @@ def main():
     if not top:
         return {"status": "no_relevant"}
 
-    # Step 3: Generate posts
-    print("\n[3/4] Generating Jekyll posts...")
+    # Step 4: Generate posts
+    print("\n[4/5] Generating Jekyll posts...")
     created = []
     for i, art in enumerate(top, 1):
         style = classify_article(art['title'], art.get('content_preview', ''))
@@ -289,8 +360,13 @@ def main():
         print(f"  [{i}/{len(top)}] {path.name}")
         created.append(path)
 
-    # Step 4: Git push
-    print("\n[4/4] Git commit & push...")
+    # Mark as published and save history
+    for art in top:
+        history = mark_published(art, history)
+    save_history(history)
+
+    # Step 5: Git push
+    print("\n[5/5] Git commit & push...")
     result = git_push()
     print(f"  -> {result.get('status')}")
 
