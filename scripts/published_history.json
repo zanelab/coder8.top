@@ -23,7 +23,7 @@
     },
     {
       "id": "89675a6280c679fd3be8f52896c129f5",
-      "title": "面试官问我：“AI 写代码比你快 100 倍，你的价值在哪？”",
+      "title": "面试官问我："AI 写代码比你快 100 倍，你的价值在哪？"",
       "url": "https://juejin.cn/post/7629213925721145379",
       "source": "juejin",
       "published_date": "2026-05-27T08:01:07.623472"
@@ -48,6 +48,13 @@
       "url": "https://juejin.cn/post/7643116195138781238",
       "source": "juejin",
       "published_date": "2026-05-30T08:01:07.014534"
+    },
+    {
+      "id": "c30bd8fde430b273354f64685f0e5b44",
+      "title": "Cursor AI for Data Visualization: A Complete Hands-On Guide",
+      "url": "",
+      "source": "coder8.top",
+      "published_date": "2026-06-03T03:02:00.000000"
     }
   ]
 }
