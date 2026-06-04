@@ -41,6 +41,41 @@
       "url": "https://github.com/safishamsi/graphify",
       "source": "github",
       "published_date": "2026-06-03T08:00:45.708208"
+    },
+    {
+      "id": "31a0279522467e07905a32d965224d10",
+      "title": "DeepSeek-V4-Pro 写代码到底行不行？我拿 GLM-5.1 跟它硬碰硬比了一轮",
+      "url": "https://juejin.cn/post/7632230684447211554",
+      "source": "juejin",
+      "published_date": "2026-06-04T08:01:15.972369"
+    },
+    {
+      "id": "fd6ebf1c2a2876b98c47ee66674b6bb3",
+      "title": "我用AI做了个微信小游戏-上线了",
+      "url": "https://juejin.cn/post/7641048219231010862",
+      "source": "juejin",
+      "published_date": "2026-06-04T08:01:15.972419"
+    },
+    {
+      "id": "c844edc3a8a0e1d5a884810b5830887e",
+      "title": "Ask HN: Current best open-source or commercial automated LLM coding agent?",
+      "url": "https://news.ycombinator.com/item?id=42082050",
+      "source": "hackernews",
+      "published_date": "2026-06-04T08:01:50.939769"
+    },
+    {
+      "id": "673fe58a0298ef68ffe214cadaf9d0b2",
+      "title": "体验完阿里「悟空」，我想把电脑里的龙虾换掉了，是真NB！",
+      "url": "https://juejin.cn/post/7618418125198196779",
+      "source": "juejin",
+      "published_date": "2026-06-04T08:01:50.939823"
+    },
+    {
+      "id": "fc58e6ae2a00b11638918d5fe0dac60b",
+      "title": "Show HN: Agentic Gatekeeper – AI pre-commit hook to auto-patch logic errors",
+      "url": "https://github.com/revanthpobala/agentic-gatekeeper",
+      "source": "hackernews",
+      "published_date": "2026-06-04T08:01:50.939844"
     }
   ]
 }
