@@ -263,6 +263,7 @@ Please translate and rewrite the content above into English.
 layout: post
 title: "{title}"
 subtitle: ""
+    date: "{datetime.now().strftime('%Y-%m-%d')}"
 banner:
   image: {cover_path}
   opacity: 0.7
