@@ -24,6 +24,7 @@ POSTS_DIR = WORKSPACE / "_posts"
 POSTS_IMAGES_DIR = WORKSPACE / "assets" / "images" / "posts"
 HISTORY_FILE = WORKSPACE / "scripts" / "published_history.json"
 HISTORY_DAYS = 30
+COVERS_DIR = WORKSPACE / "assets" / "images" / "covers"
 
 ssl_ctx = ssl.create_default_context()
 ssl_ctx.check_hostname = False
@@ -184,19 +185,20 @@ def generate_slug(title):
     slug = re.sub(r'[-\s]+', '-', slug)
     return slug.strip('-')[:80].lower()
 
-def download_cover(title):
+def pick_cover(slug):
+    """Pick a deterministic cover image from local covers/ based on slug"""
+    import os
     try:
-        seed = hashlib.md5(title.encode()).hexdigest()[:8]
-        image_url = f"https://picsum.photos/seed/{seed}/800/400"
-        POSTS_IMAGES_DIR.mkdir(parents=True, exist_ok=True)
-        filename = f"{datetime.now().strftime('%Y%m%d%H%M%S')}-{seed}.jpg"
-        req = urllib.request.Request(image_url, headers={"User-Agent": "Mozilla/5.0"})
-        with urllib.request.urlopen(req, timeout=15, context=ssl_ctx) as resp:
-            with open(POSTS_IMAGES_DIR / filename, 'wb') as f:
-                f.write(resp.read())
-        return f"/assets/images/posts/{filename}"
-    except Exception as e:
-        return None
+        covers = sorted([f for f in os.listdir(COVERS_DIR) if f.endswith('.jpg')])
+        if not covers:
+            return "/assets/images/covers/cluade-1.jpg"
+        h = 0
+        for c in slug:
+            h = (h * 31 + ord(c)) & 0xFFFFFFFF
+        index = h % len(covers)
+        return f"/assets/images/covers/{covers[index]}"
+    except Exception:
+        return "/assets/images/covers/cluade-1.jpg"
 
 # ========== Jekyll Post Generation ==========
 
@@ -214,8 +216,7 @@ def create_jekyll_post(article, style):
     filename = f"{datetime.now().strftime('%Y-%m-%d')}-{slug}.md"
     filepath = POSTS_DIR / filename
 
-    cover = download_cover(title)
-    cover_path = cover if cover else "/assets/images/covers/cluade-1.jpg"
+    cover_path = pick_cover(slug)
 
     if style == 'tutorial':
         rewrite_instructions = """This is a tutorial/guide article. Rewrite as a step-by-step hands-on guide with:

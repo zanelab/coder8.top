@@ -64,5 +64,15 @@
 
 {% if banner_image or banner_video %}
   {% assign has_banner = true %}
+{% else %}
+  {% comment %}Fallback: deterministic cover from slug/title{% endcomment %}
+  {% assign cover_seed = page.slug | default: page.title %}
+  {% assign hash = 0 %}
+  {% for c in cover_seed %}
+    {% assign hash = hash | plus: c | modulo: 2147483647 %}
+  {% endfor %}
+  {% assign index = hash | modulo: site.data.covers.covers.size %}
+  {% assign banner_image = site.data.covers.covers[index] | relative_url %}
+  {% assign has_banner = true %}
 {% endif %}
 
