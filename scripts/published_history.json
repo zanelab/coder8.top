@@ -76,6 +76,14 @@
       "url": "https://github.com/revanthpobala/agentic-gatekeeper",
       "source": "hackernews",
       "published_date": "2026-06-04T08:01:50.939844"
+    },
+    {
+      "id": "4b5d0017d28076d2074defa84b3776b6",
+      "title": "1-Click GitHub Token Stealing via a VSCode Bug",
+      "date": "2026-06-02",
+      "source": "https://blog.ammaraskar.com/github-token-stealing/",
+      "slug": "VSCode-GitHub-Token-Stealing-Bug",
+      "platform": "both"
     }
   ]
 }
