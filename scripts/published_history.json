@@ -84,6 +84,44 @@
       "source": "https://blog.ammaraskar.com/github-token-stealing/",
       "slug": "VSCode-GitHub-Token-Stealing-Bug",
       "platform": "both"
+    },
+    {
+      "id": "7b1f7aff00ab0df310b594512841da1a",
+      "title": "How to Submit Your MCP Server to Anthropic's Connector Directory",
+      "url": "",
+      "source": "vault",
+      "date": "2026-06-04",
+      "platform": "both",
+      "slug": "mcp-anthropic-connector-directory",
+      "published_date": "2026-06-07T00:00:00.000000"
+    },
+    {
+      "id": "7b1f7aff00ab0df310b594512841da1a",
+      "title": "How to Submit Your MCP Server to Anthropic's Connector Directory",
+      "url": "https://dev.to/qrflows/how-to-submit-your-mcp-server-to-anthropics-connector-directory-from-someone-who-did-it-143m",
+      "source": "vault",
+      "date": "2026-06-04",
+      "published_date": "2026-06-07"
+    },
+    {
+      "id": "cebcf0da2c1860b0",
+      "title": "OpenAI Launches New Codex Tools: Targeting White-Collar Work",
+      "url": "",
+      "source": "vault",
+      "date": "2026-06-02",
+      "platform": "blog",
+      "slug": "openai-codex-tools-white-collar",
+      "published_date": "2026-06-07T07:36:45.296039"
+    },
+    {
+      "id": "2ff69662aa34bf8f",
+      "title": "Apple Approves Poke as First AI Agent on Messages for Business",
+      "url": "",
+      "source": "vault",
+      "date": "2026-06-05",
+      "platform": "blog",
+      "slug": "apple-poke-ai-agent",
+      "published_date": "2026-06-07T07:36:45.296039"
     }
   ]
 }
