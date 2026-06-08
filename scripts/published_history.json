@@ -122,6 +122,15 @@
       "platform": "blog",
       "slug": "apple-poke-ai-agent",
       "published_date": "2026-06-07T07:36:45.296039"
+    },
+    {
+      "id": "i-built-mcp-servers-for-9-saas-apis-heres-what-i-learned-about-the-pattern-2mf7",
+      "title": "I Built MCP Servers for 9 SaaS APIs — Here's What I Learned About the Pattern",
+      "slug": "i-built-mcp-servers-for-9-saas-apis",
+      "published_date": "2026-06-08",
+      "source_date": "2026-06-07",
+      "wechat_draft": "skipped (IP not in whitelist)",
+      "jekyll_post": "_posts/2026-06-07-i-built-mcp-servers-for-9-saas-apis.md"
     }
   ]
 }
