@@ -1,6 +1,17 @@
 {
   "articles": [
     {
+      "id": "a6160eae24035e9fd17052fe9f7f5346",
+      "title": "I Built MCP Servers for 9 SaaS APIs — Here's What I Learned About the Pattern",
+      "slug": "i-built-mcp-servers-for-9-saas-apis",
+      "date": "2026-06-08",
+      "source": "vault",
+      "platform": "both",
+      "wechat_draft": "skipped (IP not in whitelist)",
+      "jekyll_post": "_posts/2026-06-08-i-built-mcp-servers-for-9-saas-apis.md",
+      "published_date": "2026-06-09T00:00:00.000000"
+    },
+    {
       "id": "25a9247d170908c5d7555c10a8230bec",
       "title": "别再裸用 Claude Code 了！32 个亲测Skills + 8 个 MCP，开发效率直接拉满！",
       "url": "https://juejin.cn/post/7620060655607857178",
@@ -131,6 +142,17 @@
       "source_date": "2026-06-07",
       "wechat_draft": "skipped (IP not in whitelist)",
       "jekyll_post": "_posts/2026-06-07-i-built-mcp-servers-for-9-saas-apis.md"
+    },
+    {
+      "id": "reid-hoffman-leaves-microsoft-manus-founder-mode-2026-06-05",
+      "title": "Reid Hoffman Leaves Microsoft's Board to Go \"Founder Mode\" with Startup Manus",
+      "date": "2026-06-05",
+      "source": "vault",
+      "platform": "both",
+      "slug": "reid-hoffman-leaves-microsoft-manus-founder-mode",
+      "wechat_draft": "skipped (IP not in whitelist)",
+      "jekyll_post": "_posts/2026-06-05-reid-hoffman-leaves-microsoft-manus-founder-mode.md",
+      "published_date": "2026-06-08T00:00:00.000000"
     }
   ]
 }
