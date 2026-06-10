@@ -1,6 +1,14 @@
 {
   "articles": [
     {
+      "id": "give-your-ai-agent-live-web-data-with-mcp",
+      "title": "Giving Your AI Agent Live Web Data: A MCP Practical Guide",
+      "date": "2026-06-08",
+      "published": "2026-06-10",
+      "source": "vault",
+      "wechat_skipped": "40164 IP whitelist"
+    },
+    {
       "id": "a6160eae24035e9fd17052fe9f7f5346",
       "title": "I Built MCP Servers for 9 SaaS APIs — Here's What I Learned About the Pattern",
       "slug": "i-built-mcp-servers-for-9-saas-apis",
