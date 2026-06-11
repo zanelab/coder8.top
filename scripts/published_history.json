@@ -161,6 +161,13 @@
       "wechat_draft": "skipped (IP not in whitelist)",
       "jekyll_post": "_posts/2026-06-05-reid-hoffman-leaves-microsoft-manus-founder-mode.md",
       "published_date": "2026-06-08T00:00:00.000000"
+    },
+    {
+      "id": "mcp-servers-9-saas-apis-pattern",
+      "title": "我为 9 个 SaaS API 构建了 MCP 服务器：架构模式总结",
+      "slug": "mcp-servers-9-saas-apis-pattern",
+      "date": "2026-06-08",
+      "source": "https://dev.to/friendlygeorge/i-built-mcp-servers-for-9-saas-apis-heres-what-i-learned-about-the-pattern-2mf7"
     }
   ]
 }
