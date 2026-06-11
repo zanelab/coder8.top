@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "I Built MCP Servers for 9 SaaS APIs — Here's What I Learned About the Pattern"
-date: 2026-06-08
+date: 2026-06-11
 banner:
   image: /assets/images/covers/freestocks-I_pOqP6kCOI-unsplash.jpg
 author: zane.deng
